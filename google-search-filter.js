@@ -18,7 +18,9 @@ if (url.includes(secondPageTag)) {
 
 // 要过滤的网站列表
 let websites = [
-    'kknews.cc'
+    'kknews.cc',
+    'douyin.com/shipin',
+    'douyin.com/search',
 ];
 
 //获取上游传入的 argument
