@@ -9,7 +9,7 @@
 
 [Script]
 
-ContentFarmFilter = type=http-response,pattern="^https:\/\/www\.google\.\w{2,4}(\/\w{2})?\/search",requires-body=1,max-size=0,script-path=https://jason5ng32.github.io/GoogleSearchFilter/google-search-filter.js,argument="websites={{{Websites}}}&combine={{{Combine}}}"
+GoogleSearchFilter = type=http-response,pattern="^https:\/\/www\.google\.\w{2,4}(\/\w{2})?\/search",requires-body=1,max-size=0,script-path=https://jason5ng32.github.io/GoogleSearchFilter/google-search-filter.js,argument="websites={{{Websites}}}&combine={{{Combine}}}"
 
 
 [MITM]
