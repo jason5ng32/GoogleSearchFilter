@@ -21,6 +21,8 @@ let websites = [
     'kknews.cc',
     'douyin.com/shipin',
     'douyin.com/search',
+    'developer.aliyun.com/article',
+    'www.aliyun.com/sswb/'
 ];
 
 //获取上游传入的 argument
@@ -33,18 +35,24 @@ if (arguments) {
         let [key, value] = param.split('=');
         value = value.trim().replace(/^"|"$/g, '');
         if (key === 'websites') {
-            userDefinedWebsites = value.split(','); 
+            userDefinedWebsites = value.split(',')
+                .map(site => site.trim()) 
+                .filter(site => site !== ''); 
         } else if (key === 'combine') {
             combine = value.toLowerCase() === 'true';
         }
     });
 }
 
+let userDefined = !(userDefinedWebsites.length === 0 || userDefinedWebsites.every(site => site === ''));
+
 // 进行网站列表合并
 if (userDefinedWebsites.length > 0 && combine) {
     websites = websites.concat(userDefinedWebsites);
 } else if (userDefinedWebsites.length > 0) {
     websites = userDefinedWebsites;
+} else if (!userDefined && !combine) {
+    $done({ body });
 }
 
 // Web 版的类名
