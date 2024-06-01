@@ -22,7 +22,7 @@ let websites = [
     'douyin.com/shipin',
     'douyin.com/search',
     'developer.aliyun.com/article',
-    'www.aliyun.com/sswb/'
+    'www.aliyun.com/ssw'
 ];
 
 //获取上游传入的 argument
