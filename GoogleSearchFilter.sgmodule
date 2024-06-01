@@ -1,0 +1,16 @@
+#!name=Google 搜索结果过滤器
+#!desc=在搜索结果里，隐藏不想要的网站的结果。（由于技术限制，屏蔽数量的展示只统计第一页，但不影响后续页的结果过滤）
+#!author=Jason Ng 阿禅
+#!homepage=https://github.com/jason5ng32
+#!category=Filter
+#!arguments=Websites:"developer.aliyun.com/article,www.douyin.com/search",Combine:true
+#!arguments-desc=Websites:网站列表，用逗号分开，可以包含路径，不支持正则。\nCombine:是否将自定义的名单和内置名单合并，true为是，false为否。
+
+
+[Script]
+
+ContentFarmFilter = type=http-response,pattern="^https:\/\/www\.google\.\w{2,4}(\/\w{2})?\/search",requires-body=1,max-size=0,script-path=google-search-filter.js,argument="websites={{{Websites}}}&combine={{{Combine}}}"
+
+
+[MITM]
+hostname = %APPEND% www.google.com
