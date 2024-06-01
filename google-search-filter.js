@@ -166,7 +166,7 @@ function showToast(doc, count) {
     const notification = doc.createElement('div');
     notification.className = outputClass;
     notification.style.cssText = device === 'Mac' ? outputStyle_Web : outputStyle_iPhone;
-    notification.innerHTML = `${count} 条内容农场的搜索结果已被移除`;
+    notification.innerHTML = `${count} 条内容你不喜欢的搜索结果已被隐藏`;
 
     // 将通知元素添加到容器的顶部
     if (searchContainer.firstChild) {
