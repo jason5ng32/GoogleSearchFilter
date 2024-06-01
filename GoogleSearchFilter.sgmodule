@@ -4,7 +4,7 @@
 #!homepage=https://github.com/jason5ng32/GoogleSearchFilter
 #!category=Filter
 #!arguments=Websites:"developer.aliyun.com/article,www.douyin.com/search",Combine:true
-#!arguments-desc=Websites:网站列表，用逗号分开，可以包含路径，不支持正则。\nCombine:是否将自定义的名单和内置名单合并，true为是，false为否。
+#!arguments-desc=Websites:网站列表，用逗号分开，可以包含路径，不支持正则。\nCombine:是否将自定义的名单和内置名单合并，true为是，其它为否。
 
 
 [Script]
