@@ -11,6 +11,12 @@ let body = $response.body;
 let header = $request.headers;
 let url = $request.url;
 
+
+// 如果不是网页搜索，立即返回
+if (url.includes('tbm=') || url.includes('udm=')) {
+    $done({body});
+}
+
 // 判断 User-Agent 是否包含 iPhone
 const userAgent = header['user-agent'];
 let device = 'Mac';
