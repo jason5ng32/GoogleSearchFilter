@@ -1,6 +1,6 @@
 #!requirement=CORE_VERSION>=20
 #!name=Google 搜索结果过滤器
-#!desc=在搜索结果里，隐藏不想要的网站的结果。（由于技术限制，屏蔽数量的展示只统计第一页，但不影响后续页的结果过滤）
+#!desc=在搜索结果里，隐藏不想要的网站的结果。还结果页一个清净。
 #!author=Jason Ng 阿禅
 #!homepage=https://github.com/jason5ng32/GoogleSearchFilter
 #!category=Filter

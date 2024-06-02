@@ -70,11 +70,12 @@ let resultClass = $persistentStore.read('GoogleResultClass') || 'MjjYud'; // 'Mj
 const searchContainerId_Web = 'search';
 const searchContainerId_iPhone = 'topstuff';
 const displayNoneClass = 'JasonN'; // 定义一个隐藏类名
+const buttonClass = 'JN-BTN';
 
 // 通知的样式
 const outputStyle_Web = 'font-size: 1rem; color: green;height: 18pt;';
 const outputStyle_iPhone = 'color: green; display: flex;align-items: center;height: 30pt;flex-wrap: nowrap;padding-left: 10pt;';
-const outputClass = resultClass;
+const outputClass = 'JN-Toast';
 
 // 第一页搜索结果过滤
 function firstLoadFiter(rawData) {
@@ -95,7 +96,8 @@ function firstLoadFiter(rawData) {
 
     // 塞入隐藏样式
     const styleElement = doc.querySelector('style');
-    styleElement.innerHTML += `.${displayNoneClass} { display: none; }`;
+    styleElement.innerHTML += `.${displayNoneClass} { display: none; opacity: 0.5; }`;
+    styleElement.innerHTML += `.${buttonClass} { background-color: green;border: none;color: white;margin-left: 10px;border-radius: 5px; } .${buttonClass}:hover { background-color: darkgreen; }.${buttonClass}:focus { outline: none; } .${buttonClass}:active { background-color: #0d300d; }`;
 
     // 获取搜索结果
     const results = doc.querySelectorAll(`.${resultClass}`);
@@ -117,13 +119,21 @@ function firstLoadFiter(rawData) {
             // 检查 href 是否包含指定的网址
             if (websites.some(website => href.includes(website))) {
                 // 如果包含，设置不可见
-                result.style.display = 'none';
+                result.className += ` ${displayNoneClass}`;
                 matchCount++;
             }
         });
     });
 
-    showToast(doc, matchCount);
+    // 注入脚本到第一个 <script> 标签
+    const firstScriptTag = doc.querySelector('script');
+    const injectedScript = injectScript();
+    
+    if (firstScriptTag) {
+        firstScriptTag.textContent = injectedScript + firstScriptTag.textContent;
+    }
+
+    showToast(doc);
 
     return '<!doctype html>' + doc.documentElement.outerHTML;
 }
@@ -177,16 +187,77 @@ function secondLoadFiter(rawData) {
     return htmlContent;
 }
 
+// 注入脚本
+function injectScript() {
+
+    const scriptToInject = `
+    // 切换显示状态的函数
+    function toggleJasonNVisibility() {
+        const elements = document.querySelectorAll('.${displayNoneClass}');
+        elements.forEach(el => {
+            el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
+        });
+    }
+
+    // 实时监控并统计被隐藏的数量
+    function countJasonNElements() {
+        const count = document.querySelectorAll('.${displayNoneClass}').length;
+        const notification = document.querySelector('.${outputClass}');
+        if (count === 0) {
+            notification.style.display = 'none';
+            return;
+        } 
+        updateNotificationContent(notification, count);   
+    }
+
+    function updateNotificationContent(container, count) {
+        container.innerHTML = '';
+        
+        // 添加新的统计信息
+        const info = document.createElement('span');
+        info.textContent = count + ' 条你不喜欢的搜索结果已被隐藏';
+        container.appendChild(info);
+    
+        // 添加或更新按钮
+        const toggleButton = document.createElement('button');
+        toggleButton.className = '${buttonClass}';
+        toggleButton.textContent = '显示/隐藏';
+        toggleButton.onclick = toggleJasonNVisibility;
+        container.appendChild(toggleButton);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const observer = new MutationObserver(mutations => {
+            let shouldUpdate = false;
+            mutations.forEach(mutation => {
+                if ((mutation.type === 'childList' && mutation.target.className !== '${outputClass}') ||
+                    (mutation.type === 'attributes' && mutation.target.className === '${displayNoneClass}')) {
+                    shouldUpdate = true; // 只有当非通知容器的子节点变化时才标记需要更新
+                }
+            });
+            if (shouldUpdate) {
+                countJasonNElements();
+            }
+        });
+    
+        const config = { attributes: true, childList: true, subtree: true, attributeFilter: ['style', 'class'] };
+        observer.observe(document.body, config);
+
+
+    });
+    `;
+
+    return scriptToInject;
+}
+
 // 添加 Toast
-function showToast(doc, count) {
-    if (count === 0) return;
+function showToast(doc) {
     const searchContainer = device === 'Mac' ? doc.getElementById(searchContainerId_Web) : doc.getElementById(searchContainerId_iPhone);
 
     // 创建通知元素
     const notification = doc.createElement('div');
     notification.className = outputClass;
     notification.style.cssText = device === 'Mac' ? outputStyle_Web : outputStyle_iPhone;
-    notification.innerHTML = `${count} 条你不喜欢的搜索结果已被隐藏`;
 
     // 将通知元素添加到容器的顶部
     if (searchContainer.firstChild) {
