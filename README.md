@@ -50,4 +50,4 @@
 
 ## 支持其它工具不
 
-是否支持 Loon, Quantumult X, Stash 之类的？理论上是可以移植的，但是我懒得做。您有空可以搞搞。
+是否支持 Loon, Quantumult X, Stash 之类的？理论上是可以移植的，您有空可以搞搞。

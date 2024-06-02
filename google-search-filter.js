@@ -1,3 +1,12 @@
+// ####
+// 备忘：第一页的时候，Google 返回的是整个 DOM，第二页开始，返回的疑似是 JSONP 数据，所以要分别处理。
+// 第一页可以简单处理，第二页开始，使用正则处理。
+// 试过第二页在移除了一些前后缀后用 DOMParser 解析，但会因此引入一些转义字符，导致触发数据完整性问题。
+// 在第一页处理的时候，将搜索结果条目的类名存起来，方便后续页的过滤。
+// 在第一页的时候，塞入一个用来隐藏搜索结果的类名，方便后续页的过滤。
+// 实测发现，如果塞入的类名不等于 6 个字符串长度，会触发数据完整性问题。挺好玩的。
+// ####
+
 let body = $response.body;
 let header = $request.headers;
 let url = $request.url;
@@ -22,7 +31,8 @@ let websites = [
     'douyin.com/shipin',
     'douyin.com/search',
     'developer.aliyun.com/article',
-    'www.aliyun.com/ssw'
+    'www.aliyun.com/ssw',
+    'bbs.huaweicloud.com/blogs'
 ];
 
 //获取上游传入的 argument
@@ -36,8 +46,8 @@ if (arguments) {
         value = value.trim().replace(/^"|"$/g, '');
         if (key === 'websites') {
             userDefinedWebsites = value.split(',')
-                .map(site => site.trim()) 
-                .filter(site => site !== ''); 
+                .map(site => site.trim())
+                .filter(site => site !== '');
         } else if (key === 'combine') {
             combine = value.toLowerCase() === 'true';
         }
@@ -56,30 +66,40 @@ if (userDefinedWebsites.length > 0 && combine) {
 }
 
 // Web 版的类名
-const resultClass = 'MjjYud'; // 条目类名
+let resultClass = $persistentStore.read('GoogleResultClass') || 'MjjYud'; // 'MjjYud' 是近期版本的类名
 const searchContainerId_Web = 'search';
 const searchContainerId_iPhone = 'topstuff';
-const displayNoneClass = 'kur4we'; // 借用 Google 本身就用来隐藏的类名
+const displayNoneClass = 'JasonN'; // 定义一个隐藏类名
 
 // 通知的样式
 const outputStyle_Web = 'font-size: 1rem; color: green;height: 18pt;';
 const outputStyle_iPhone = 'color: green; display: flex;align-items: center;height: 30pt;flex-wrap: nowrap;padding-left: 10pt;';
-const outputClass = 'MjjYud';
+const outputClass = resultClass;
 
 // 第一页搜索结果过滤
 function firstLoadFiter(rawData) {
     const parser = new DOMParser();
     const doc = parser.parseFromString(rawData, 'text/html');
 
+    // 获取搜索条目的类名
+    const rso = doc.getElementById('rso');
+    if (rso) {
+        const firstDiv = rso.querySelector('div');
+        if (firstDiv) {
+            $persistentStore.write(firstDiv.className.split(' ')[0], 'GoogleResultClass');
+        } else {
+            $persistentStore.write(resultClass, 'GoogleResultClass');
+        }
+    }
+    resultClass = $persistentStore.read('GoogleResultClass');
+
+    // 塞入隐藏样式
+    const styleElement = doc.querySelector('style');
+    styleElement.innerHTML += `.${displayNoneClass} { display: none; }`;
+
     // 获取搜索结果
     const results = doc.querySelectorAll(`.${resultClass}`);
     let matchCount = 0;
-
-    // 添加不展示类名
-    const styleElements = doc.querySelectorAll('style');
-    styleElements.forEach(styleElement => {
-        styleElement.innerHTML += `.${displayNoneClass} { display: none; }`;
-    });
 
     results.forEach(result => {
         // 对于iPhone，额外检查是否包含具有 lang 属性的 div
@@ -138,7 +158,7 @@ function secondLoadFiter(rawData) {
             matchCount++;
         }
     }
-    
+
     // 不匹配的时候直接返回
     if (matchCount === 0) {
         return rawData;
