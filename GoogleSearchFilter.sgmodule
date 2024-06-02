@@ -4,13 +4,13 @@
 #!author=Jason Ng 阿禅
 #!homepage=https://github.com/jason5ng32/GoogleSearchFilter
 #!category=Filter
-#!arguments=Websites:"blog.csdn.net,zhidao.baidu.com,jingyan.baidu.com",Combine:true
-#!arguments-desc=Websites:网站列表，用逗号分开，可以包含路径，不支持正则。\nCombine:是否将自定义的名单和内置名单合并，true为是，其它为否。
+#!arguments=Websites:"blog.csdn.net,zhidao.baidu.com,jingyan.baidu.com",Combine:true,Toggle:false
+#!arguments-desc=Websites:网站列表，用逗号分开，可以包含路径，不支持正则。\nCombine:是否将自定义的名单和内置名单合并，true为是，其它为否。\nToggle:是否显示有多少条结果被隐藏以及显示/隐藏开关。true为显示，其它为隐藏。\n需要注意的是，如果开启 Toggle 选项，首次加载时会出现一定延迟。
 
 
 [Script]
 
-GoogleSearchFilter = type=http-response,pattern="^https:\/\/www\.google\.\w{2,4}(\/\w{2})?\/search",requires-body=1,max-size=0,script-path=https://jason5ng32.github.io/GoogleSearchFilter/google-search-filter.js,argument="websites={{{Websites}}}&combine={{{Combine}}}"
+GoogleSearchFilter = type=http-response,pattern="^https:\/\/www\.google\.\w{2,4}(\/\w{2})?\/search",requires-body=1,max-size=0,script-path=https://jason5ng32.github.io/GoogleSearchFilter/google-search-filter.js,argument="websites={{{Websites}}}&combine={{{Combine}}}&toggle={{{Toggle}}}"
 
 
 [MITM]

@@ -39,6 +39,7 @@ let websites = [
 let arguments = $argument;
 let userDefinedWebsites = [];
 let combine = false;
+let toggle = false;
 if (arguments) {
     let params = arguments.split('&');
     params.forEach(param => {
@@ -50,6 +51,8 @@ if (arguments) {
                 .filter(site => site !== '');
         } else if (key === 'combine') {
             combine = value.toLowerCase() === 'true';
+        } else if (key === 'toggle') {
+            toggle = value.toLowerCase() === 'true';
         }
     });
 }
@@ -125,15 +128,15 @@ function firstLoadFiter(rawData) {
         });
     });
 
-    // 注入脚本到第一个 <script> 标签
-    const firstScriptTag = doc.querySelector('script');
-    const injectedScript = injectScript();
-
-    if (firstScriptTag) {
-        firstScriptTag.textContent = injectedScript + firstScriptTag.textContent;
+    if (toggle) {
+        // 注入脚本到第一个 <script> 标签
+        const firstScriptTag = doc.querySelector('script');
+        const injectedScript = injectScript();
+        if (firstScriptTag) {
+            firstScriptTag.textContent = injectedScript + firstScriptTag.textContent;
+        }
+        showToast(doc);
     }
-
-    showToast(doc);
 
     return '<!doctype html>' + doc.documentElement.outerHTML;
 }
