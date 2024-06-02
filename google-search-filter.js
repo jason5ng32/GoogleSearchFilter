@@ -5,7 +5,7 @@
 // 在第一页处理的时候，将搜索结果条目的类名存起来，方便后续页的过滤。
 // 在第一页的时候，塞入一个用来隐藏搜索结果的类名，方便后续页的过滤。
 // 实测发现，如果塞入的类名不等于 6 个字符串长度，会触发数据完整性问题。挺好玩的。
-// ####
+// #### 
 
 let body = $response.body;
 let header = $request.headers;
@@ -97,7 +97,7 @@ function firstLoadFiter(rawData) {
     // 塞入隐藏样式
     const styleElement = doc.querySelector('style');
     styleElement.innerHTML += `.${displayNoneClass} { display: none; opacity: 0.5; }`;
-    styleElement.innerHTML += `.${buttonClass} { background-color: green;border: none;color: white;margin-left: 10px;border-radius: 5px; } .${buttonClass}:hover { background-color: darkgreen; }.${buttonClass}:focus { outline: none; } .${buttonClass}:active { background-color: #0d300d; }`;
+    styleElement.innerHTML += `.${buttonClass} { background-color: green;border: none;color: white;margin-left: 10px;border-radius: 5px;height:16pt; } .${buttonClass}:hover { background-color: darkgreen; }.${buttonClass}:focus { outline: none; } .${buttonClass}:active { background-color: #0d300d; }`;
 
     // 获取搜索结果
     const results = doc.querySelectorAll(`.${resultClass}`);
@@ -128,7 +128,7 @@ function firstLoadFiter(rawData) {
     // 注入脚本到第一个 <script> 标签
     const firstScriptTag = doc.querySelector('script');
     const injectedScript = injectScript();
-    
+
     if (firstScriptTag) {
         firstScriptTag.textContent = injectedScript + firstScriptTag.textContent;
     }
@@ -191,60 +191,95 @@ function secondLoadFiter(rawData) {
 function injectScript() {
 
     const scriptToInject = `
+    let JN_Results_Hide = true;
     // 切换显示状态的函数
-    function toggleJasonNVisibility() {
+    function toggleVisibility() {
         const elements = document.querySelectorAll('.${displayNoneClass}');
         elements.forEach(el => {
             el.style.display = (el.style.display === 'none' || el.style.display === '') ? 'block' : 'none';
         });
+        JN_Results_Hide = !JN_Results_Hide;
+        updateButton();
+    }
+
+    // 更新按钮文案
+    function updateButton() {
+        const toggleButton = document.querySelector('.${buttonClass}');
+        if (toggleButton) {
+            toggleButton.textContent = JN_Results_Hide ? '已隐藏' : '已显示';
+        }
     }
 
     // 实时监控并统计被隐藏的数量
-    function countJasonNElements() {
+    function countDisplayNoneElements() {
         const count = document.querySelectorAll('.${displayNoneClass}').length;
         const notification = document.querySelector('.${outputClass}');
         if (count === 0) {
             notification.style.display = 'none';
-            return;
-        } 
-        updateNotificationContent(notification, count);   
+        } else {
+            updateNotificationContent(notification, count);
+        }
     }
 
+    // 更新统计信息
     function updateNotificationContent(container, count) {
-        container.innerHTML = '';
-        
-        // 添加新的统计信息
-        const info = document.createElement('span');
-        info.textContent = count + ' 条你不喜欢的搜索结果已被隐藏';
-        container.appendChild(info);
-    
-        // 添加或更新按钮
-        const toggleButton = document.createElement('button');
-        toggleButton.className = '${buttonClass}';
-        toggleButton.textContent = '显示/隐藏';
-        toggleButton.onclick = toggleJasonNVisibility;
-        container.appendChild(toggleButton);
+        let info = container.querySelector('span');
+        if (!info) {
+            info = document.createElement('span');
+            container.appendChild(info);
+        }
+        info.textContent = '有 ' + count + ' 条你不喜欢的搜索结果';
+
+        // 确保按钮存在
+        let toggleButton = container.querySelector('button.${buttonClass}');
+        if (!toggleButton) {
+            toggleButton = document.createElement('button');
+            toggleButton.className = '${buttonClass}';
+            toggleButton.onclick = toggleVisibility;
+            container.appendChild(toggleButton);
+        }
+        updateButton();
     }
 
+    function debounce(func, wait, immediate) {
+        let timeout;
+        return function() {
+            const context = this, args = arguments;
+            const later = function() {
+                timeout = null;
+                if (!immediate) func.apply(context, args);
+            };
+            const callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func.apply(context, args);
+        };
+    }
+    
     document.addEventListener('DOMContentLoaded', () => {
-        const observer = new MutationObserver(mutations => {
+        const observer = new MutationObserver(debounce(mutations => {
             let shouldUpdate = false;
             mutations.forEach(mutation => {
-                if ((mutation.type === 'childList' && mutation.target.className !== '${outputClass}') ||
-                    (mutation.type === 'attributes' && mutation.target.className === '${displayNoneClass}')) {
-                    shouldUpdate = true; // 只有当非通知容器的子节点变化时才标记需要更新
+                if ((mutation.type === 'childList' && !mutation.target.classList.contains('${outputClass}')) ||
+                    (mutation.type === 'attributes' && mutation.target.classList.contains('${displayNoneClass}'))) {
+                    shouldUpdate = true;
                 }
             });
             if (shouldUpdate) {
-                countJasonNElements();
+                countDisplayNoneElements();
             }
-        });
+        }, 100)); // 防抖延迟
     
-        const config = { attributes: true, childList: true, subtree: true, attributeFilter: ['style', 'class'] };
+        const config = {
+            attributes: true,
+            childList: true,
+            subtree: true,
+            attributeFilter: ['style']
+        };
         observer.observe(document.body, config);
-
-
     });
+    
+
     `;
 
     return scriptToInject;
