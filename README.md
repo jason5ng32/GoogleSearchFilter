@@ -4,7 +4,7 @@
 
 安装地址：
 
-[https://jason5ng32.github.io/GoogleSearchFilter.sgmodule](https://jason5ng32.github.io/GoogleSearchFilter/GoogleSearchFilter.sgmodule)
+[https://jason5ng32.github.io/GoogleSearchFilter/GoogleSearchFilter.sgmodule](https://jason5ng32.github.io/GoogleSearchFilter/GoogleSearchFilter.sgmodule)
 
 ## 为什么做这个模块
 
